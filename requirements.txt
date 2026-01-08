@@ -1,0 +1,21 @@
+# --- Web API ---
+fastapi>=0.110
+uvicorn[standard]>=0.27
+
+# --- Config & utils ---
+python-dotenv>=1.0
+pydantic>=2.6
+
+# --- LLM ---
+openai>=1.12
+
+# --- Embeddings & Vector DB ---
+chromadb>=0.4.22
+tiktoken>=0.6
+
+# --- Document loaders ---
+pypdf>=4.0
+
+# --- Testing (opcional pero recomendable) ---
+pytest>=8.0
+
