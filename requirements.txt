@@ -19,3 +19,4 @@ pypdf>=4.0
 # --- Testing (opcional pero recomendable) ---
 pytest>=8.0
 
+streamlit
