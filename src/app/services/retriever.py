@@ -1,91 +1,75 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from pathlib import Path
-from typing import List, Dict, Any, Optional
+from typing import List, Optional
 import os
+from pathlib import Path
+
 import chromadb
 from openai import OpenAI
 
-"""
-Este modulo es un retriever semántico, que usa embeddings de OpenAI, y usa ChromaDB para buscar infor relevante en una consulta. Para
-ello busca fragmentos de texto "chunks" relevantes para una pregunta dada, usando una búsqueda semántica (similitud de significado, no palabras exactas)
 
-"""
 @dataclass
 class RetrievedChunk:
     text: str
     source: str
     distance: float
-    metadata: Dict[str, Any]
-"""
-Esta es una clase simple que representa un fragmento recuperado:
-- text: el contenido del fragmento
-- source: de donde viene
-- distance: similitud con la consulta (menor mas similar)
-- metadata: metadatos adicionales
-
-"""
-
-
 
 
 class Retriever:
     def __init__(self):
+        # --- Config ---
         chroma_dir = os.getenv("CHROMA_DIR", "vector_store/chroma")
         self.collection_name = os.getenv("CHROMA_COLLECTION", "medical_kb")
+        self.embed_model = os.getenv("MODEL_EMBED", "text-embedding-3-small")
 
+        # --- OpenAI client (esto te faltaba) ---
+        api_key = os.getenv("OPENAI_API_KEY")
+        if not api_key:
+            raise RuntimeError("OPENAI_API_KEY no encontrada (Secrets/.env).")
+        self.client = OpenAI(api_key=api_key)
+
+        # --- Chroma ---
         chroma_path = Path(chroma_dir)
         if not chroma_path.exists():
-            raise RuntimeError(
-                f"CHROMA_DIR no existe: {chroma_path.resolve()} "
-                f"(¿se ha subido el vector_store al repo?)"
-            )
+            raise RuntimeError(f"CHROMA_DIR no existe: {chroma_path.resolve()}")
 
         self.chroma = chromadb.PersistentClient(path=str(chroma_path))
-
-        # Diagnóstico: qué colecciones hay realmente
-        cols = self.chroma.list_collections()
-        names = [c.name for c in cols]
-        print("[Chroma] path:", str(chroma_path.resolve()))
-        print("[Chroma] collections:", names)
-        print("[Chroma] requested:", self.collection_name)
-
-        if self.collection_name not in names:
+        # Fail fast: la colección debe existir (si no, tu store no está bien)
+        cols = [c.name for c in self.chroma.list_collections()]
+        if self.collection_name not in cols:
             raise RuntimeError(
-                f"No existe la colección '{self.collection_name}' en esta BD Chroma.\n"
-                f"Colecciones disponibles: {names}\n"
-                f"Ruta: {chroma_path.resolve()}\n"
-                f"Solución: subir el vector_store correcto o reingestar en Cloud."
+                f"No existe la colección '{self.collection_name}'. "
+                f"Disponibles: {cols}. Ruta: {chroma_path.resolve()}"
             )
 
         self.col = self.chroma.get_collection(self.collection_name)
 
-    def retrieve(self, question: str, top_k: int = 5) -> List[RetrievedChunk]:
-        q_emb = self.oa.embeddings.create(
+    def retrieve(self, query: str, top_k: int = 5) -> List[RetrievedChunk]:
+        # 1) Embed de la query
+        q_emb = self.client.embeddings.create(
             model=self.embed_model,
-            input=question,
+            input=query,
         ).data[0].embedding
 
+        # 2) Query en Chroma por embeddings (NO query_texts)
         res = self.col.query(
             query_embeddings=[q_emb],
             n_results=top_k,
             include=["documents", "metadatas", "distances"],
         )
 
-        chunks: List[RetrievedChunk] = []
-        docs = res["documents"][0]
-        metas = res["metadatas"][0]
-        dists = res["distances"][0]
+        docs = res.get("documents", [[]])[0]
+        metas = res.get("metadatas", [[]])[0]
+        dists = res.get("distances", [[]])[0]
 
-        for doc_text, meta, dist in zip(docs, metas, dists):
-            chunks.append(
+        out: List[RetrievedChunk] = []
+        for doc, meta, dist in zip(docs, metas, dists):
+            out.append(
                 RetrievedChunk(
-                    text=doc_text,
-                    source=meta.get("source", ""),
+                    text=doc,
+                    source=(meta or {}).get("source", "unknown"),
                     distance=float(dist),
-                    metadata=meta,
                 )
             )
-
-        return chunks
+        return out
