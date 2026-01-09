@@ -1,20 +1,3 @@
-#_____TEMPORAL__________________________________________-
-import os
-from pathlib import Path
-import streamlit as st
-
-st.write("CWD:", os.getcwd())
-st.write("Files in repo root:", [p.name for p in Path(".").iterdir()][:30])
-
-chroma_path = Path("vector_store/chroma")
-st.write("CHROMA exists?:", chroma_path.exists())
-st.write("CHROMA absolute:", str(chroma_path.resolve()))
-if chroma_path.exists():
-    st.write("CHROMA files sample:", [p.name for p in chroma_path.iterdir()][:20])
-#_______________________________________________-
-
-
-
 import streamlit as st
 from pathlib import Path
 from dotenv import load_dotenv
