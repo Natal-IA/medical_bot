@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 import os
-
 import chromadb
 from openai import OpenAI
 
@@ -28,35 +27,38 @@ Esta es una clase simple que representa un fragmento recuperado:
 
 """
 
+
+
+
 class Retriever:
-    """
-    la clase principal con responsabilidad única: convertir las preguntas en embeddings y buscar chunks relevantes y devolverlos
-    retriever = Retriever()
-    chunks = retriever.retrieve("qué es la urologia", top_k=5)
-    """
+    def __init__(self):
+        chroma_dir = os.getenv("CHROMA_DIR", "vector_store/chroma")
+        self.collection_name = os.getenv("CHROMA_COLLECTION", "medical_kb")
 
-    def __init__(
-        self,
-        chroma_dir: Optional[str] = None,
-        collection_name: Optional[str] = None,
-        embed_model: Optional[str] = None,
-    ):
-        # Resolver rutas respecto a raíz del repo (no respecto al CWD)
-        project_root = Path(__file__).resolve().parents[3]  # .../src/app/services -> repo root
-        chroma_dir = chroma_dir or os.getenv("CHROMA_DIR", "vector_store/chroma")
-        self.chroma_path = str((project_root / chroma_dir).resolve())
+        chroma_path = Path(chroma_dir)
+        if not chroma_path.exists():
+            raise RuntimeError(
+                f"CHROMA_DIR no existe: {chroma_path.resolve()} "
+                f"(¿se ha subido el vector_store al repo?)"
+            )
 
-        self.collection_name = collection_name or os.getenv("CHROMA_COLLECTION", "medical_kb")
-        self.embed_model = embed_model or os.getenv("MODEL_EMBED", "text-embedding-3-small")
+        self.chroma = chromadb.PersistentClient(path=str(chroma_path))
 
-        api_key = os.getenv("OPENAI_API_KEY")
-        if not api_key:
-            raise RuntimeError("OPENAI_API_KEY no encontrada en entorno/.env")
+        # Diagnóstico: qué colecciones hay realmente
+        cols = self.chroma.list_collections()
+        names = [c.name for c in cols]
+        print("[Chroma] path:", str(chroma_path.resolve()))
+        print("[Chroma] collections:", names)
+        print("[Chroma] requested:", self.collection_name)
 
-        self.oa = OpenAI(api_key=api_key)
+        if self.collection_name not in names:
+            raise RuntimeError(
+                f"No existe la colección '{self.collection_name}' en esta BD Chroma.\n"
+                f"Colecciones disponibles: {names}\n"
+                f"Ruta: {chroma_path.resolve()}\n"
+                f"Solución: subir el vector_store correcto o reingestar en Cloud."
+            )
 
-        self.chroma = chromadb.PersistentClient(path=self.chroma_path)
-        # IMPORTANTE: usa get_collection (no create) para no crear vacías por error
         self.col = self.chroma.get_collection(self.collection_name)
 
     def retrieve(self, question: str, top_k: int = 5) -> List[RetrievedChunk]:
