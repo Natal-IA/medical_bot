@@ -2,12 +2,12 @@
 
       edical_bot/
       ├─ README.md
-      ├─ pyproject.toml              # o requirements.txt (te doy ambas opciones abajo)
-      ├─ .env.example                # nunca subas .env real
+      ├─ pyproject.toml              # o requirements.txt ?
+      ├─ .env.example                
       ├─ .gitignore
       ├─ data/
       │  ├─ raw/                     # PDFs, docs originales (no sensibles)
-      │  └─ processed/               # texto limpio si lo generas
+      │  └─ processed/               # texto limpio
       ├─ docs/
       │  ├─ sources/                 # “fuentes aprobadas” por médicos (md/pdf)
       │  │   ├─ clinic_admin.md
