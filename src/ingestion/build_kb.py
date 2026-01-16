@@ -42,7 +42,7 @@ def chunk_text_tokens(
     """
     1) Obtienen el encoder
     2) Si no hay titoken hace fallback (mejor asi no, equivale 1 token a 4 caracteres y eso depende del idioma). Esto lo hace con ventana deslizante
-    3) Si haay enc (modo bueno), hace chuck por tokens 
+    3) Si hay enc (modo bueno), hace chuck por tokens 
     """
    # enc = get_encoder(model_name)
     enc = None

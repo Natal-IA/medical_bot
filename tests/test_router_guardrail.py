@@ -28,6 +28,7 @@ def main():
         # Admin
         "¿Cuál es el horario de la clínica?",
         "¿Cómo puedo pedir cita?",
+        "¿Donde es vuestra dirección?",
         "¿Dónde estáis ubicados?",
         "¿Trabajáis con seguro o mutua?",
         "¿Cuánto cuesta una primera consulta?",

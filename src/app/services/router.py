@@ -28,9 +28,9 @@ class RouterService:
 
         # Mini-faq determinista (POC).crecerlo o moverlo a admin_faq.py
         self.admin_faq = {
-            "horario": "Nuestro horario depende del centro/doctor. Si me dices qué médico o clínica, te indico horarios y cómo pedir cita.",
-            "cita": "Puedes pedir cita indicando el médico y tu disponibilidad (días/horas). Si prefieres, facilita un teléfono y te indicamos el canal adecuado.",
-            "ubicacion": "Dime qué consulta/médico y te indico la dirección exacta y cómo llegar.",
+          #  "horario": "Nuestro horario depende del doctor. Si me dices qué médico o clínica, te indico horarios y cómo pedir cita.",
+         ##   "cita": "Puedes pedir cita indicando el médico y tu disponibilidad (días/horas). Si prefieres, facilita un teléfono y te indicamos el canal adecuado.",
+         #   "ubicacion": "Dime qué consulta/médico y te indico la dirección exacta y cómo llegar.",
             "precio": "Los precios dependen del tipo de consulta y pruebas. Si me dices qué necesitas, te doy una orientación y cómo confirmarlo.",
             "seguro": "Trabajamos con algunas aseguradoras/mutuas según el médico. Dime cuál tienes y lo revisamos.",
         }
@@ -38,12 +38,12 @@ class RouterService:
     def _admin_answer(self, text: str) -> str:
         t = text.lower()
         # matching súper simple
-        if "horario" in t:
-            return self.admin_faq["horario"]
-        if "cita" in t or "reserv" in t:
-            return self.admin_faq["cita"]
-        if "ubic" in t or "direcc" in t or "cómo llegar" in t or "como llegar" in t:
-            return self.admin_faq["ubicacion"]
+   #     if "horario" in t:
+     #       return self.admin_faq["horario"]
+     #   if "cita" in t or "reserv" in t:
+      #      return self.admin_faq["cita"]
+     #   if "ubic" in t or "direcc" in t or "cómo llegar" in t or "como llegar" in t:
+       #     return self.admin_faq["ubicacion"]
         if "precio" in t or "tarifa" in t:
             return self.admin_faq["precio"]
         if "seguro" in t or "mutua" in t:
