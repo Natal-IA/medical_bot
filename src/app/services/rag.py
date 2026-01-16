@@ -51,12 +51,14 @@ class RAGService:
         )
 
         system = (
-            "Eres un asistente de una clínica de urología. "
+            "Eres un asistente de una clínica de urología informativo. "
+            "Tu objetivo principal es resolver dudas comunes y educar al usuario. "
             "Respondes con tono claro y profesional. "
-            "No das diagnósticos ni tratamiento personalizado. "
+          #  "No das diagnósticos ni tratamiento personalizado. Solo sugiere en base a tu CONTEXTO y di que debe ser evaluado por un médico.  "
             "Si hay señales de urgencia, recomiendas acudir a urgencias.\n"
             "Responde SOLO usando el CONTEXTO proporcionado. "
-            "Si falta información, di que no lo sabes y sugiere pedir cita."
+            "Solo sugiere pedir cita cuando existan signos de alarma claros, empeoramiento, o cuando el usuario lo solicite explícitamente. "
+            "Evita repetir la recomendación de pedir cita si ya ha sido mencionada. "
         )
 
         user = (
@@ -74,7 +76,7 @@ class RAGService:
                 {"role": "system", "content": system},
                 {"role": "user", "content": user},
             ],
-            temperature=0.2,
+            temperature=0.5,
         )
 
         answer = resp.choices[0].message.content.strip()
